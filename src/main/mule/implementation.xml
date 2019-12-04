@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="139fafd9-1323-4cd3-9ee4-5b0ee0818469" >
+		<db:my-sql-connection host="mudb.mulesoft-training.com" port="3306" user="mule" password="mule" database="training" />
+	</db:config>
+	<flow name="getAccountsFlow" doc:id="bd765cdc-d258-4078-905e-a614ddbd2349" >
+		<db:select doc:name="Select" doc:id="e24cb48f-7005-4e23-bb4d-173102c2cf33" config-ref="Database_Config">
+			<db:sql >SELECT * FROM flights_customers</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="1abcc507-892f-4f86-88d6-1439739914fa" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Strings
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	id: payload01.accountID default "",
+	firstName: substringBefore(payload01.name, " ") default "",
+	lastName: substringAfter(payload01.name, " ") default "",
+	address: (payload01.street default "") ++ (",") ++ (payload01.city default ""),
+	postal: payload01.postal default "",
+	country: payload01.country default "",
+	creationDate: payload01.creationDate as String default "",
+	accountType: payload01.accountType default "",
+	miles: payload01.miles default 0,
+	ID: payload01.accountID as Number default 0
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="postAccountsFlow" doc:id="f62a9d77-73a9-47e4-b00d-9a547a34c6b3" >
+		<set-payload value='{"message":"POSTED DUDE"}' doc:name="Set Payload" doc:id="560f88d3-ab7c-4107-89e4-27dda5193737" />
+	</flow>
+</mule>

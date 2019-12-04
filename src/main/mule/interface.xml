@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
     <http:listener-config name="accounts-api-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
-    <apikit:config name="accounts-api-config" api="resource::0164a3fb-2195-4424-9055-0624132080d1:accounts-api-kek:1.0.0:raml:zip:accounts-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <apikit:config name="accounts-api-config" api="resource::0164a3fb-2195-4424-9055-0624132080d1:accounts-api-kek:1.0.0:raml:zip:accounts-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" disableValidations="true">
+		<apikit:flow-mappings >
+			<apikit:flow-mapping resource="/accounts" action="get" flow-ref="getAccountsFlow" />
+			<apikit:flow-mapping resource="/accounts" action="post" content-type="application/json" flow-ref="post:\accounts:application\json:accounts-api-config" />
+		</apikit:flow-mappings>
+	</apikit:config>
     <flow name="accounts-api-main">
         <http:listener config-ref="accounts-api-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -124,46 +129,9 @@ output application/json
         </error-handler>
     </flow>
     <flow name="get:\accounts:accounts-api-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-[
-  {
-    id: 1,
-    fistName: "John",
-    lastName: "Doe",
-    address: "the street",
-    postal: "10-200",
-    country: "Germany",
-    miles: 12333,
-    creationDate: "2017/07/26",
-    "type": "personal"
-  }, 
-  {
-    id: 2,
-    fistName: "Johnny",
-    lastName: "Bravo",
-    address: "the handsome street 21",
-    postal: "10-300",
-    country: "Germany",
-    miles: 1212,
-    creationDate: "2017/09/26",
-    "type": "personal"
-  }
-]]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="7fd93cb4-6586-41b0-be08-efa13abc24e9" name="getAccountsFlow"/>
     </flow>
     <flow name="post:\accounts:application\json:accounts-api-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-"Account created (but not really)"]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="68d786d4-9aef-486a-9c97-2b9296869736" name="postAccountsFlow"/>
     </flow>
 </mule>
