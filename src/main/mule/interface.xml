@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
     <http:listener-config name="accounts-api-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
-    <apikit:config name="accounts-api-config" api="resource::0164a3fb-2195-4424-9055-0624132080d1:accounts-api-kek:1.0.0:raml:zip:accounts-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" disableValidations="true">
+    <apikit:config name="accounts-api-config" api="resource::0164a3fb-2195-4424-9055-0624132080d1:accounts-api-kek:2.0.0:raml:zip:accounts-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" disableValidations="true">
 		<apikit:flow-mappings >
-			<apikit:flow-mapping resource="/accounts" action="get" flow-ref="getAccountsFlow" />
+			<apikit:flow-mapping resource="/accounts" action="get" flow-ref="get:\accounts:accounts-api-config" />
 			<apikit:flow-mapping resource="/accounts" action="post" content-type="application/json" flow-ref="post:\accounts:application\json:accounts-api-config" />
+			<apikit:flow-mapping resource="/accounts/{id}" action="get" content-type="application/json" flow-ref="get:\accounts\(id):accounts-api-config" />
 		</apikit:flow-mappings>
 	</apikit:config>
     <flow name="accounts-api-main">
@@ -114,7 +116,8 @@ output application/json
         <apikit:console config-ref="accounts-api-config" />
         <error-handler>
             <on-error-propagate type="APIKIT:NOT_FOUND">
-                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
                     <ee:message>
                         <ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -129,9 +132,21 @@ output application/json
         </error-handler>
     </flow>
     <flow name="get:\accounts:accounts-api-config">
-		<flow-ref doc:name="Flow Reference" doc:id="7fd93cb4-6586-41b0-be08-efa13abc24e9" name="getAccountsFlow"/>
+        <flow-ref doc:name="Flow Reference" doc:id="7fd93cb4-6586-41b0-be08-efa13abc24e9" name="getAccountsFlow" />
     </flow>
     <flow name="post:\accounts:application\json:accounts-api-config">
-		<flow-ref doc:name="Flow Reference" doc:id="68d786d4-9aef-486a-9c97-2b9296869736" name="postAccountsFlow"/>
+        <flow-ref doc:name="Flow Reference" doc:id="68d786d4-9aef-486a-9c97-2b9296869736" name="postAccountsFlow" />
+    </flow>
+    <flow name="put:\accounts\(id):application\json:accounts-api-config">
+		<set-payload value='{"message": "PUT with ID"}' doc:name="put by Id" doc:id="d2f20e1e-6d06-4059-a520-bb53c615c33d" />
+    </flow>
+    <flow name="delete:\accounts\(id):accounts-api-config">
+		<set-payload value='{"message": "DELETE with ID"}' doc:name="delete by Id" doc:id="1d8d36d0-138b-4dcd-99c3-a2483e6e8aa6" />
+    </flow>
+    <flow name="patch:\accounts\(id):application\json:accounts-api-config">
+		<set-payload value='{"message": "PATCH with ID"}' doc:name="patch by Id" doc:id="7ff9b0f3-11cc-4abd-a0a2-7e493c43114f" />
+    </flow>
+    <flow name="get:\accounts\(id):accounts-api-config">
+		<flow-ref doc:name="getById reference" doc:id="400440c9-f16f-48e9-aa37-760d7ed58ec2" name="getAccountByIdFlow"/>
     </flow>
 </mule>

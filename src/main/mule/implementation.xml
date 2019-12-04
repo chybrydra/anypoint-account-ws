@@ -36,4 +36,30 @@ payload map ( payload01 , indexOfPayload01 ) -> {
 	<flow name="postAccountsFlow" doc:id="f62a9d77-73a9-47e4-b00d-9a547a34c6b3" >
 		<set-payload value='{"message":"POSTED DUDE"}' doc:name="Set Payload" doc:id="560f88d3-ab7c-4107-89e4-27dda5193737" />
 	</flow>
+	<flow name="getAccountByIdFlow" doc:id="169e8f75-54be-44b7-a5b5-b68be51e765c" >
+		<db:select doc:name="Copy_of_Select" doc:id="232833b4-e191-4b68-b357-096ba9f34802" config-ref="Database_Config" >
+			<db:sql >SELECT * FROM flights_customers WHERE accountID = :ID</db:sql>
+			<db:input-parameters ><![CDATA[#[{'ID': attributes.uriParams.id}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Copy_of_Transform Message" doc:id="c5ec5e35-0715-4162-8a7c-6ebb6c8cf513" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Strings
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	id: payload01.accountID default "",
+	firstName: substringBefore(payload01.name, " ") default "",
+	lastName: substringAfter(payload01.name, " ") default "",
+	address: (payload01.street default "") ++ (",") ++ (payload01.city default ""),
+	postal: payload01.postal default "",
+	country: payload01.country default "",
+	creationDate: payload01.creationDate as String default "",
+	accountType: payload01.accountType default "",
+	miles: payload01.miles default 0,
+	ID: payload01.accountID as Number default 0
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
 </mule>

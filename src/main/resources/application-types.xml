@@ -18,4 +18,13 @@ type Account = Array<{|  id: String,   firstName: String,   lastName: String,   
       </types:output-event>
     </types:processor-declaration>
   </types:enrichment>
+  <types:enrichment select="#c5ec5e35-0715-4162-8a7c-6ebb6c8cf513">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="Account"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
 </types:mule>
